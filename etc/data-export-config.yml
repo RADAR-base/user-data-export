@@ -1,0 +1,4 @@
+keycloakUrl: "http://localhost:8080/auth/"
+clientId: "user-data-export"
+clientSecret: ""
+realmName: "mighealth"

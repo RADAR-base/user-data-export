@@ -28,6 +28,7 @@ data class User(
             // Thus fetching the first item here.
             userMap[entry.key] = entry.value.first()
         }
+//        attributes["isProcessed"]
         return userMap
     }
 

@@ -21,7 +21,7 @@ class UserDataWriter(private val config: Config) {
 
     fun writeUsers(usersToWrite: List<User>) {
         try {
-            val dateDirectory = Paths.get("${directoryDateFormatter.format(Instant.now())}/${config.userDataExportFile}")
+            val dateDirectory = Paths.get("${directoryDateFormatter.format(Instant.now())}/${directoryTimeFormatter.format(Instant.now())}/${config.userDataExportFile}")
             logger.info("parent directory $dateDirectory")
             val fullPath = rootPath.resolve(dateDirectory).normalize()
             logger.info("Writing user data to $fullPath")
@@ -51,12 +51,15 @@ class UserDataWriter(private val config: Config) {
         if (Files.notExists(fullPath)) {
             File(fullPath.toUri()).parentFile.mkdirs()
             return Files.createFile(fullPath).toFile()
+        } else {
+            return File(fullPath.toUri())
         }
-        return File(fullPath.toUri())
     }
 
     companion object {
         private val directoryDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                .withZone(ZoneId.of("UTC"))
+        private val directoryTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
                 .withZone(ZoneId.of("UTC"))
     }
 }

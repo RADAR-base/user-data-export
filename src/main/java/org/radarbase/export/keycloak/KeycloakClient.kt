@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.radarbase.export.Config
 import org.radarbase.export.api.User
 import org.radarbase.export.exception.BadGatewayException
@@ -15,7 +17,7 @@ import java.net.MalformedURLException
 import java.time.Duration
 import java.time.Instant
 
-class KeycloakClient (private val config: Config) {
+class KeycloakClient (config: Config) {
 
     private val keycloakBaseUrl: HttpUrl = config.keycloakUrl.toHttpUrlOrNull()
         ?: throw MalformedURLException("Cannot parse base URL ${config.keycloakUrl} as an URL")
@@ -45,7 +47,6 @@ class KeycloakClient (private val config: Config) {
             localToken
         } else {
             val url = keycloakBaseUrl.resolve("realms/$realmName/protocol/openid-connect/token")!!
-            logger.info("Url is $url")
             val request = Request.Builder().apply {
                 url(url)
                 post(FormBody.Builder().apply {
@@ -79,25 +80,36 @@ class KeycloakClient (private val config: Config) {
                     403 -> throw ForbiddenException("Current credentials are not allowed to perform this action ${request.method} on ${request.url}")
                     401 -> throw NotAuthorizedException("Current credentials are not authorized to perform this action ${request.method} on ${request.url}")
                 }
-
-                throw BadGatewayException("Cannot connect to keycloak : Response-code ${response.code} ${response.body}")
+                throw BadGatewayException("Cannot connect to keycloak : Response-code ${response.code} ${response.body?.string()}")
             }
         }
     }
 
     fun readUsers(): List<User> {
-        logger.debug("Requesting for users from realm $realmName")
         val url = keycloakBaseUrl.resolve("admin/realms/$realmName/users")!!
-        logger.debug("Users Url is $url")
-        val request = Request.Builder().apply {
+        logger.debug("Requesting for users: URL $url")
+        return userListReader.readValue(execute(Request.Builder().apply {
             url(url)
             header("Authorization", "Bearer ${ensureToken()}")
-        }.build()
-
-        return userListReader.readValue<List<User>>(execute(request))
+        }.build()))
     }
+
+    fun alterUser(user: User) {
+        val url = keycloakBaseUrl.resolve("admin/realms/$realmName/users/${user.id}")!!
+        logger.debug("Requesting to override user ${user.id} : URL $url")
+        execute(Request.Builder().apply {
+            url(url)
+            put(user.reset().toJsonBody())
+            header("Authorization", "Bearer ${ensureToken()}")
+        }.build())
+    }
+
+    private fun Any.toJsonBody(mediaType: MediaType = APPLICATION_JSON): RequestBody = mapper
+            .writeValueAsString(this)
+            .toRequestBody(mediaType)
 
     companion object {
         private val logger = LoggerFactory.getLogger(KeycloakClient::class.java)
+        private val APPLICATION_JSON = "application/json; charset=utf-8".toMediaType()
     }
 }

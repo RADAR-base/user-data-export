@@ -11,6 +11,7 @@ plugins {
 
 application {
     mainClassName = "org.radarbase.export.MainKt"
+    version = "0.0.1"
 }
 
 project.extra.apply {

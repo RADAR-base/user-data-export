@@ -1,7 +1,6 @@
 package org.radarbase.export
 
 import org.radarbase.export.service.KeycloakDataExportService
-import org.radarbase.jersey.config.ConfigLoader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Executors

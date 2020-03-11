@@ -4,7 +4,7 @@ import com.opencsv.CSVWriter
 import org.radarbase.export.Config
 import org.radarbase.export.api.User
 import org.radarbase.export.exception.ExportTemporarilyFailedException
-import org.radarbase.export.logger
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -61,5 +61,7 @@ class UserDataWriter(private val config: Config) {
                 .withZone(ZoneId.of("UTC"))
         private val directoryTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
                 .withZone(ZoneId.of("UTC"))
+        private val logger = LoggerFactory.getLogger(UserDataWriter::class.java)
+
     }
 }

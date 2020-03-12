@@ -1,6 +1,8 @@
 package org.radarbase.export.service
 
 import org.radarbase.export.Config
+import org.radarbase.export.api.User
+import org.radarbase.export.api.User.Companion.IS_PROCESSED
 import org.radarbase.export.io.UserDataWriter
 import org.radarbase.export.keycloak.KeycloakClient
 import org.slf4j.LoggerFactory
@@ -12,12 +14,22 @@ class KeycloakDataExportService (config: Config) {
 
     fun exportUserData() {
         logger.info("Initializing user-data export from keycloak...")
-        val users = keycloakClient.readUsers()
-        userDataWriter.writeUsers(usersToWrite = users)
-        users.forEach { keycloakClient.alterUser(it) }
-        logger.info("Exported and overridden ${users.size} users")
+        val currentUsers = keycloakClient.readUsers()
+                logger.info("current users $currentUsers")
+
+        val usersToWrite = currentUsers
+                .filterNot { it.isProcessed() }.toList()
+        logger.info("users to process $usersToWrite")
+        val usersToOverride = userDataWriter.writeUsers(usersToWrite)
+        usersToOverride.forEach { keycloakClient.alterUser(it.reset()) }
+        logger.info("Exported and overridden ${usersToOverride.size} users")
     }
 
+    private fun User.isProcessed(): Boolean {
+            logger.info("Attributes $attributes")
+            logger.info("isProcessed ${(attributes?.getValue(IS_PROCESSED)?.first()?.toBoolean() ?: false)}")
+            return (attributes?.getValue(IS_PROCESSED)?.first()?.toBoolean() ?: false)
+    }
     companion object {
         private val logger = LoggerFactory.getLogger(KeycloakDataExportService::class.java)
     }

@@ -28,14 +28,16 @@ data class User(
             // Thus fetching the first item here.
             userMap[entry.key] = entry.value.first()
         }
-//        attributes["isProcessed"]
         return userMap
     }
-
 
     fun reset(): User = this.copy(
             firstName = "",
             lastName = "",
-            attributes = emptyMap())
+            attributes = mutableMapOf(IS_PROCESSED to listOf(true.toString())))
 
+    companion object {
+        const val IS_PROCESSED = "isProcessed"
+
+    }
 }

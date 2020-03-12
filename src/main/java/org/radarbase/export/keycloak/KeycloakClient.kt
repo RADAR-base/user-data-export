@@ -96,8 +96,7 @@ class KeycloakClient (config: Config) {
 
     fun alterUser(user: User) {
         val url = keycloakBaseUrl.resolve("admin/realms/$realmName/users/${user.id}")!!
-        logger.debug("Requesting to override user ${user.id} : URL $url")
-        logger.info("User is $user")
+        logger.debug("Requesting to override user ${user.id} : $user")
         execute(Request.Builder().apply {
             url(url)
             put(user.toJsonBody())

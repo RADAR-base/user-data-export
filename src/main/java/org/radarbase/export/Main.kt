@@ -30,7 +30,6 @@ class Application (private val config: Config) {
             logger.info("Interrupted, shutting down...")
             executorService.shutdownNow()
         }
-//        runDataExport()
     }
 
     private fun runDataExport() = KeycloakDataExportService(config).exportUserData()

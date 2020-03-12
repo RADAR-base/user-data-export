@@ -1,5 +1,7 @@
 package org.radarbase.export.api
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+
 data class User(
     var id: String,
     var createdTimestamp: Long,
@@ -28,14 +30,21 @@ data class User(
             // Thus fetching the first item here.
             userMap[entry.key] = entry.value.first()
         }
-//        attributes["isProcessed"]
         return userMap
     }
-
 
     fun reset(): User = this.copy(
             firstName = "",
             lastName = "",
-            attributes = emptyMap())
+            attributes = mutableMapOf(IS_PROCESSED to listOf(true.toString())))
 
+    @JsonIgnore
+    fun isProcessed(): Boolean {
+        return (attributes?.getOrDefault(IS_PROCESSED, null)?.first()?.toBoolean() ?: false)
+    }
+
+    companion object {
+        const val IS_PROCESSED = "isProcessed"
+
+    }
 }

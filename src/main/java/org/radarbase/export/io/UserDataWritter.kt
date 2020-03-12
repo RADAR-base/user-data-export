@@ -20,21 +20,23 @@ class UserDataWriter(private val config: Config) {
     private val rootPath = Paths.get(config.userDataExportPath!!)
 
     fun writeUsers(usersToWrite: List<User>) {
+        if(usersToWrite.isEmpty()) {
+            logger.info("No users required to be written to CSV")
+            return
+        }
+
         try {
             val dateDirectory = Paths.get("${directoryDateFormatter.format(Instant.now())}/${directoryTimeFormatter.format(Instant.now())}/${config.userDataExportFile}")
-            logger.info("parent directory $dateDirectory")
             val fullPath = rootPath.resolve(dateDirectory).normalize()
             logger.info("Writing user data to $fullPath")
             val file = prepareFile(fullPath) ?: throw IOException("Could not create file")
             val csvWriter = CSVWriter(file.bufferedWriter())
-
             val headers = usersToWrite.flatMap { it.toMap().keys }.toSet()
             logger.info("Current set of headers are : $headers")
-
             val output = mutableListOf(headers.toTypedArray())
-            output.addAll(usersToWrite.map { user ->
-                // remapping the values for final set of headerss
-                headers.map { header -> user.toMap().getOrDefault(header, "") }.toTypedArray()
+            // remap the values for final set of headers
+            output.addAll(usersToWrite.map {
+                user -> headers.map { header -> user.toMap().getOrDefault(header, "") }.toTypedArray()
             }.toList())
 
             csvWriter.use {

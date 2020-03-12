@@ -7,5 +7,5 @@ data class Config(
         var realmName: String?,
         var userDataExportFile: String? = "keycloak-user-export.csv",
         var userDataExportPath: String? = "etc/",
-        var exportIntervalInSeconds: Long = 60
+        var exportIntervalInSeconds: Long = 120
    )

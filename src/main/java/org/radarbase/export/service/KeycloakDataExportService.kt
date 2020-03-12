@@ -12,10 +12,14 @@ class KeycloakDataExportService (config: Config) {
 
     fun exportUserData() {
         logger.info("Initializing user-data export from keycloak...")
-        val users = keycloakClient.readUsers()
-        userDataWriter.writeUsers(usersToWrite = users)
-        users.forEach { keycloakClient.alterUser(it) }
-        logger.info("Exported and overridden ${users.size} users")
+        val currentUsers = keycloakClient.readUsers()
+        val usersToWrite = currentUsers.filterNot { it.isProcessed() }.toList()
+        logger.info("Found ${usersToWrite.size} unprocessed users from ${currentUsers.size} total number of users")
+        if(usersToWrite.isNotEmpty()) {
+            userDataWriter.writeUsers(usersToWrite)
+            usersToWrite.forEach { keycloakClient.alterUser(it.reset()) }
+            logger.info("Exported and overridden ${usersToWrite.size} users")
+        }
     }
 
     companion object {

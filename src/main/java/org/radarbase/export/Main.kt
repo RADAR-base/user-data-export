@@ -11,15 +11,13 @@ val logger: Logger = LoggerFactory.getLogger("org.radarbase.export.Main")
 
 fun main(args: Array<String>) {
     val config: Config = ConfigLoader.loadConfig("data-export-config.yml", args)
-
-    logger.info("Starting user-data-export service")
     Application(config).start()
 }
 
 class Application (private val config: Config) {
 
     fun start() {
-        logger.info("Running as a Service with poll interval of {} seconds", config.exportIntervalInSeconds)
+        logger.info("Running Data Export as a Service with poll interval of {} seconds", config.exportIntervalInSeconds)
         logger.info("Press Ctrl+C to exit...")
         val executorService = Executors.newSingleThreadScheduledExecutor()
 

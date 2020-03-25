@@ -21,6 +21,7 @@
 package org.radarbase.export.resource
 
 import org.radarbase.export.service.KeycloakUserManagementService
+import org.radarbase.jersey.auth.Auth
 import org.radarbase.jersey.auth.Authenticated
 import org.radarbase.jersey.auth.NeedsPermission
 import org.radarcns.auth.authorization.Permission
@@ -38,7 +39,8 @@ import javax.ws.rs.core.Response
 @Resource
 @Singleton
 class UserResource(
-        @Context private val userManagementService: KeycloakUserManagementService) {
+        @Context private val userManagementService: KeycloakUserManagementService,
+        @Context private val auth: Auth) {
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)

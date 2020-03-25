@@ -30,9 +30,10 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.radarbase.export.Config
 import org.radarbase.export.io.UserDataWriter
 import org.radarbase.export.keycloak.KeycloakClient
-import org.radarbase.export.lifecycle.KeycloakUserDataExportManager
 import org.radarbase.export.service.KeycloakUserManagementService
+import org.radarbase.jersey.auth.AuthConfig
 import org.radarbase.jersey.auth.AuthValidator
+import org.radarbase.jersey.auth.ProjectService
 import org.radarbase.jersey.auth.jwt.EcdsaJwtTokenValidator
 import org.radarbase.jersey.config.ConfigLoader
 import org.radarbase.jersey.config.EnhancerFactory
@@ -44,6 +45,8 @@ class UserManagementEnhancerFactory(private val config: Config) : EnhancerFactor
     override fun createEnhancers(): List<JerseyResourceEnhancer> = listOf(
             UserManagementEnhancer(config),
             ConfigLoader.Enhancers.generalException,
+            ConfigLoader.Enhancers.ecdsa,
+            ConfigLoader.Enhancers.radar(AuthConfig(jwtRSAPublicKeys = config.jwtRSAPublicKeys, jwtResourceName = config.jwtResourceName)),
             ConfigLoader.Enhancers.httpException)
 
     class UserManagementEnhancer(private val config: Config): JerseyResourceEnhancer {
@@ -87,6 +90,11 @@ class UserManagementEnhancerFactory(private val config: Config) : EnhancerFactor
                 bind(KeycloakUserManagementService::class.java)
                         .to(KeycloakUserManagementService::class.java)
                         .`in`(Singleton::class.java)
+
+                bind(ProjectServiceWrapper::class.java)
+                        .to(ProjectService::class.java)
+                        .`in`(Singleton::class.java)
+
 
                 binder.bind(EcdsaJwtTokenValidator::class.java)
                         .to(AuthValidator::class.java)

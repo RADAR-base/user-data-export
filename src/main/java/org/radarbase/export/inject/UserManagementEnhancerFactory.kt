@@ -20,7 +20,7 @@
 
 package org.radarbase.export.inject
 
-import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -89,10 +89,10 @@ class UserManagementEnhancerFactory(private val config: Config) : EnhancerFactor
 
     companion object {
         private val OBJECT_MAPPER: ObjectMapper = ObjectMapper()
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .registerModule(JavaTimeModule())
                 .registerModule(KotlinModule())
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
         private val client = OkHttpClient().newBuilder()
                 .connectTimeout(10, TimeUnit.SECONDS)

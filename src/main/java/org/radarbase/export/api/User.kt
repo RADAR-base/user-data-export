@@ -56,7 +56,11 @@ data class User(
     fun reset(): User = this.copy(
             firstName = "",
             lastName = "",
-            attributes = mutableMapOf(IS_PROCESSED to listOf(true.toString())))
+            // skip projectName
+            attributes = attributes?.filter { it.key == PROJECT_NAME }.orEmpty().toMutableMap().also {
+                it.putIfAbsent(IS_PROCESSED, listOf(true.toString()))
+            }
+    )
 
     @JsonIgnore
     fun isProcessed(): Boolean {
@@ -65,6 +69,6 @@ data class User(
 
     companion object {
         const val IS_PROCESSED = "isProcessed"
-
+        const val PROJECT_NAME = "projectName"
     }
 }

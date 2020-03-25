@@ -20,7 +20,7 @@
 
 package org.radarbase.export.resource
 
-import org.radarbase.export.keycloak.KeycloakClient
+import org.radarbase.export.service.KeycloakUserManagementService
 import org.radarbase.jersey.auth.Authenticated
 import org.slf4j.LoggerFactory
 import javax.annotation.Resource
@@ -36,15 +36,14 @@ import javax.ws.rs.core.Response
 @Resource
 @Singleton
 class UserResource(
-        @Context private val keycloakClient: KeycloakClient) {
+        @Context private val userManagementService: KeycloakUserManagementService) {
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("{userId}/attributes")
     fun updateUser(@PathParam("userId") userId: String, @FormParam("projectName") projectName: String): Response {
-//        return keycloakClient.
-        logger.info("user {} and project {}", userId, projectName)
-        return Response.ok().build()
+        logger.info("Request for setting project {} for user {} ...", userId, projectName)
+        return Response.ok(userManagementService.setProjectName(userId, projectName)).build()
     }
 
     companion object {

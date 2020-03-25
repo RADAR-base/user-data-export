@@ -21,8 +21,11 @@
 package org.radarbase.export.service
 
 import org.radarbase.export.Config
+import org.radarbase.export.api.User
+import org.radarbase.export.api.User.Companion.PROJECT_NAME
 import org.radarbase.export.io.UserDataWriter
 import org.radarbase.export.keycloak.KeycloakClient
+import org.radarbase.jersey.exception.HttpNotFoundException
 import org.slf4j.LoggerFactory
 import javax.ws.rs.core.Context
 
@@ -41,6 +44,18 @@ class KeycloakUserManagementService(
             usersToWrite.forEach { keycloakClient.alterUser(it.reset()) }
             logger.info("Exported and overridden ${usersToWrite.size} users")
         }
+    }
+
+
+    fun setProjectName(userId: String, projectName: String) : User {
+        val user = keycloakClient.readUser(userId) ?: throw HttpNotFoundException("user_not_found", "Could not read user $userId from keycloak")
+        val attributes = user.attributes?.toMutableMap() ?: mutableMapOf()
+        val new = user.copy(
+                attributes = attributes.plus(PROJECT_NAME to listOf(projectName))
+        )
+        logger.info("User to update : ", new )
+        keycloakClient.alterUser(new)
+        return keycloakClient.readUser(userId) ?: throw HttpNotFoundException("user_not_found", "Could not read user $userId from keycloak")
     }
 
     companion object {

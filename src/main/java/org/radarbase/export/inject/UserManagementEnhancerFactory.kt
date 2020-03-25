@@ -30,6 +30,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.radarbase.export.Config
 import org.radarbase.export.io.UserDataWriter
 import org.radarbase.export.keycloak.KeycloakClient
+import org.radarbase.export.lifecycle.KeycloakUserDataExportManager
 import org.radarbase.export.service.KeycloakUserManagementService
 import org.radarbase.jersey.auth.AuthValidator
 import org.radarbase.jersey.auth.jwt.EcdsaJwtTokenValidator
@@ -84,6 +85,10 @@ class UserManagementEnhancerFactory(private val config: Config) : EnhancerFactor
 
                 bind(KeycloakUserManagementService::class.java)
                         .to(KeycloakUserManagementService::class.java)
+                        .`in`(Singleton::class.java)
+
+                bind(KeycloakUserDataExportManager::class.java)
+                        .to(KeycloakUserDataExportManager::class.java)
                         .`in`(Singleton::class.java)
 
                 binder.bind(EcdsaJwtTokenValidator::class.java)

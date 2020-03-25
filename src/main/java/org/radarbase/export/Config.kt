@@ -34,6 +34,7 @@ data class Config(
         var userDataExportFile: String? = "keycloak-user-export.csv",
         var userDataExportPath: String? = "etc/",
         var exportIntervalInMin: Long = 120,
-        var jwtResourceName: String = "res_usermanagement",
+        var jwtResourceName: String = "user-data-manager",
+        var jwtRSAPublicKeys: List<String>? = null,
         var enableCors: Boolean? = false
    )

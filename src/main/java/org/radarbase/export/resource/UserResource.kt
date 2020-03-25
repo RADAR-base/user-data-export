@@ -22,6 +22,8 @@ package org.radarbase.export.resource
 
 import org.radarbase.export.service.KeycloakUserManagementService
 import org.radarbase.jersey.auth.Authenticated
+import org.radarbase.jersey.auth.NeedsPermission
+import org.radarcns.auth.authorization.Permission
 import org.slf4j.LoggerFactory
 import javax.annotation.Resource
 import javax.inject.Singleton
@@ -41,6 +43,7 @@ class UserResource(
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("{userId}/attributes")
+    @NeedsPermission(Permission.Entity.SUBJECT, Permission.Operation.UPDATE)
     fun updateUser(@PathParam("userId") userId: String, @FormParam("projectName") projectName: String): Response {
         logger.info("Request for setting project {} for user {} ...", userId, projectName)
         return Response.ok(userManagementService.setProjectName(userId, projectName)).build()

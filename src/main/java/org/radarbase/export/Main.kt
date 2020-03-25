@@ -21,6 +21,7 @@
 package org.radarbase.export
 
 import org.radarbase.jersey.GrizzlyServer
+import org.radarbase.jersey.config.ConfigLoader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -30,7 +31,7 @@ val logger: Logger = LoggerFactory.getLogger("org.radarbase.export.Main")
 fun main(args: Array<String>) {
     val config: Config = ConfigLoader.loadConfig("data-export-config.yml", args)
 
-    val resources = org.radarbase.jersey.config.ConfigLoader.loadResources(config.resourceConfig, config)
+    val resources = ConfigLoader.loadResources(config.resourceConfig, config)
     logger.info("Starting keycloak user-management service")
     val server = GrizzlyServer(config.baseUri, resources)
     server.listen()

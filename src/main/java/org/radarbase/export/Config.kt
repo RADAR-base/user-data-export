@@ -28,7 +28,7 @@ data class Config(
         var baseUri: URI = URI.create("http://0.0.0.0:8085/user-management/api/"),
         var resourceConfig: Class<out EnhancerFactory> = UserManagementEnhancerFactory::class.java,
         var keycloakUrl: String = "http://localhost:8080/auth/",
-        var clientId: String = "user-data-export",
+        var clientId: String = "user-data-manager",
         var clientSecret: String,
         var realmName: String?,
         var userDataExportFile: String? = "keycloak-user-export.csv",

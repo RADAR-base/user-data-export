@@ -62,7 +62,8 @@ class UserManagementEnhancerFactory(private val config: Config) : EnhancerFactor
         }
 
         override val packages: Array<String> = arrayOf(
-                "org.radarbase.export.resource")
+                "org.radarbase.export.resource",
+                "org.radarbase.export.lifecycle")
 
         override fun enhanceBinder(binder: AbstractBinder) {
             binder.apply {
@@ -85,10 +86,6 @@ class UserManagementEnhancerFactory(private val config: Config) : EnhancerFactor
 
                 bind(KeycloakUserManagementService::class.java)
                         .to(KeycloakUserManagementService::class.java)
-                        .`in`(Singleton::class.java)
-
-                bind(KeycloakUserDataExportManager::class.java)
-                        .to(KeycloakUserDataExportManager::class.java)
                         .`in`(Singleton::class.java)
 
                 binder.bind(EcdsaJwtTokenValidator::class.java)

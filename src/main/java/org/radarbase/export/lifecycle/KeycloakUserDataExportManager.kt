@@ -39,7 +39,7 @@ import javax.ws.rs.ext.Provider
 class KeycloakUserDataExportManager(
         @BackgroundScheduler @Context private val executor: ScheduledExecutorService,
         @Context private val keycloakUserManagementService: KeycloakUserManagementService,
-        @Context config: Config
+        @Context private val config: Config
 ) : ApplicationEventListener {
     private val staleProcessingAge: Duration = Duration.ofMinutes(config.exportIntervalInMin)
 
@@ -56,6 +56,7 @@ class KeycloakUserDataExportManager(
 
     @Synchronized
     private fun cancelUserExport() {
+        logger.info("Stopping user export service")
         exportTask?.let { task ->
             task.cancel(true)
             exportTask = null
@@ -64,9 +65,12 @@ class KeycloakUserDataExportManager(
 
     @Synchronized
     private fun startUserExport() {
+        logger.info("Starting user export service")
         if (exportTask != null) {
             return
         }
+        logger.info("Running Data Export as a Service with poll interval of {} minutes", staleProcessingAge.toMinutes())
+
         exportTask = executor.scheduleAtFixedRate(::runUserExport, 0, staleProcessingAge.toSeconds(), TimeUnit.SECONDS)
     }
 

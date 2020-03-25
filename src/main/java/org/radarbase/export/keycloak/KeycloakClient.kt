@@ -36,8 +36,9 @@ import org.slf4j.LoggerFactory
 import java.net.MalformedURLException
 import java.time.Duration
 import java.time.Instant
+import javax.ws.rs.core.Context
 
-class KeycloakClient (config: Config) {
+class KeycloakClient (@Context config: Config) {
 
     private val keycloakBaseUrl: HttpUrl = config.keycloakUrl.toHttpUrlOrNull()
         ?: throw MalformedURLException("Cannot parse base URL ${config.keycloakUrl} as an URL")

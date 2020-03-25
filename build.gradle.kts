@@ -22,6 +22,7 @@ project.extra.apply {
     set("grizzlyVersion", "2.4.4")
     set("jerseyVersion", "2.30")
     set("openCsvVersion", "4.6")
+    set("radarJerseyVersion", "0.2.2.3")
 }
 
 repositories {
@@ -35,6 +36,7 @@ dependencies {
     api(kotlin("stdlib-jdk8"))
 
     implementation("com.opencsv:opencsv:${project.extra["openCsvVersion"]}")
+    implementation("org.radarbase:radar-jersey:${project.extra["radarJerseyVersion"]}")
 
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${project.extra["jacksonVersion"]}")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${project.extra["jacksonVersion"]}")

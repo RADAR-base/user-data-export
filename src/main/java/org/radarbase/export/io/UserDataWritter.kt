@@ -33,9 +33,10 @@ import java.nio.file.Paths
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import javax.ws.rs.core.Context
 
 
-class UserDataWriter(private val config: Config) {
+class UserDataWriter(@Context private val config: Config) {
 
     private val rootPath = Paths.get(config.userDataExportPath!!)
 

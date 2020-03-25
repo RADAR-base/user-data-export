@@ -24,18 +24,19 @@ import org.radarbase.export.Config
 import org.radarbase.export.io.UserDataWriter
 import org.radarbase.export.keycloak.KeycloakClient
 import org.slf4j.LoggerFactory
+import javax.ws.rs.core.Context
 
-class KeycloakDataExportService (config: Config) {
-
-    private val userDataWriter = UserDataWriter(config)
-    private val keycloakClient = KeycloakClient(config)
+class KeycloakUserManagementService(
+        @Context private val config: Config,
+        @Context private val userDataWriter: UserDataWriter,
+        @Context private val keycloakClient: KeycloakClient) {
 
     fun exportUserData() {
         logger.info("Initializing user-data export from keycloak...")
         val currentUsers = keycloakClient.readUsers()
         val usersToWrite = currentUsers.filterNot { it.isProcessed() }.toList()
         logger.info("Found ${usersToWrite.size} unprocessed users from ${currentUsers.size} total number of users")
-        if(usersToWrite.isNotEmpty()) {
+        if (usersToWrite.isNotEmpty()) {
             userDataWriter.writeUsers(usersToWrite)
             usersToWrite.forEach { keycloakClient.alterUser(it.reset()) }
             logger.info("Exported and overridden ${usersToWrite.size} users")
@@ -43,6 +44,6 @@ class KeycloakDataExportService (config: Config) {
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(KeycloakDataExportService::class.java)
+        private val logger = LoggerFactory.getLogger(KeycloakUserManagementService::class.java)
     }
 }

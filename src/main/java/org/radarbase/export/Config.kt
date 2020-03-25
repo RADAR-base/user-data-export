@@ -20,12 +20,20 @@
 
 package org.radarbase.export
 
+import org.radarbase.export.inject.UserManagementEnhancerFactory
+import org.radarbase.jersey.config.EnhancerFactory
+import java.net.URI
+
 data class Config(
+        var baseUri: URI = URI.create("http://0.0.0.0:8085/user-management/api/"),
+        var resourceConfig: Class<out EnhancerFactory> = UserManagementEnhancerFactory::class.java,
         var keycloakUrl: String = "http://localhost:8080/auth/",
         var clientId: String = "user-data-export",
         var clientSecret: String,
         var realmName: String?,
         var userDataExportFile: String? = "keycloak-user-export.csv",
         var userDataExportPath: String? = "etc/",
-        var exportIntervalInSeconds: Long = 120
+        var exportIntervalInMin: Long = 120,
+        var jwtResourceName: String = "res_usermanagement",
+        var enableCors: Boolean? = false
    )

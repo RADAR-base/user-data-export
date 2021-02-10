@@ -48,7 +48,9 @@ class UserResource(
     @NeedsPermission(Permission.Entity.SUBJECT, Permission.Operation.UPDATE)
     fun updateUser(@PathParam("userId") userId: String, @FormParam("projectName") projectName: String): Response {
         logger.info("Request for setting project {} for user {} ...", userId, projectName)
-        return Response.ok(userManagementService.setProjectName(userId, projectName)).build()
+        // this part of feature is not used.
+//        return Response.ok(userManagementService.setProjectName(userId, projectName)).build()
+        return Response.ok().build()
     }
 
     companion object {

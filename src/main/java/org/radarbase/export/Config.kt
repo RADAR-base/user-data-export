@@ -36,5 +36,6 @@ data class Config(
         var exportIntervalInMin: Long = 120,
         var jwtResourceName: String = "user-data-manager",
         var jwtRSAPublicKeys: List<String>? = null,
-        var enableCors: Boolean? = false
+        var enableCors: Boolean = false,
+        val keycloakUserPageSize : Int = 100
    )

@@ -2,16 +2,12 @@
 
 A simple Kotlin application to export user information from Keycloak and store it on a CSV file then remove personally identifiable information.
 
-In addition it also adds a method to add projectName as a user attribute to the current user requesting.
-This is implemented as a work around to provide a API to manage account of the user. (Currently, it is not available from Keycloak)
-So we use the token validation and keycloak service account to achieve this. 
-
-All processed users will be markes as processed in Keycloak and will not be processed in subsequent reads. 
+All processed users will be marked as processed in Keycloak and will not be processed in subsequent reads. 
 
 
 ## Docker-compose Usage 
 ```bash
-docker run -it radarbase/user-data-manager:latest "user-data-manager" "path/to/data-export-config.yml"
+docker run -it radarbase/user-data-export:0.0.2 "user-data-exporter" "path/to/data-export-config.yml"
 ```
 ## Configuration
 Sample configuration file with all configurable parameters
@@ -23,6 +19,7 @@ clientSecret: "client secret of the above clientId"
 realmName: "keycloak realm name"
 userDataExportFile: "keycloak-user-export.csv" # default is keycloak-user-export.csv
 userDataExportPath: "etc/" # default is etc/
+keycloakUserPageSize: 100 # default is 100
 exportIntervalInMin: 120 # default is 120 minutes
 jwtResourceName: "user-data-manager" # equal to your client id
 jwtRSAPublicKeys: "public key" # public key from keycloak

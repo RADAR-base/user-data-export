@@ -105,9 +105,12 @@ class KeycloakClient(@Context private val config: Config,
         }
     }
 
-    fun readUsers(): List<User> {
-        val url = keycloakBaseUrl.resolve("admin/realms/$realmName/users")!!
-        logger.debug("Requesting for users: URL $url")
+    fun readUsers(first: Int = 0, max: Int = 100): List<User> {
+        val url = keycloakBaseUrl.resolve("admin/realms/$realmName/users")!!.newBuilder()
+                .addQueryParameter("first", first.toString())
+                .addQueryParameter("max", max.toString())
+                .build()
+        logger.info("Requesting for users: URL $url")
         return userListReader.readValue(execute(Request.Builder().apply {
             url(url)
             header("Authorization", "Bearer ${ensureToken()}")
@@ -123,6 +126,14 @@ class KeycloakClient(@Context private val config: Config,
         }.build()))
     }
 
+    fun totalNumberOfUsers(): Int {
+        val url = keycloakBaseUrl.resolve("admin/realms/$realmName/users/count")!!
+        logger.debug("Requesting the total count of the users $url")
+        return mapper.readValue(execute(Request.Builder().apply {
+            url(url)
+            header("Authorization", "Bearer ${ensureToken()}")
+        }.build()), Int::class.java)
+    }
     fun alterUser(user: User) {
         val url = keycloakBaseUrl.resolve("admin/realms/$realmName/users/${user.id}")!!
         logger.debug("Requesting to override user ${user.id} : $user")

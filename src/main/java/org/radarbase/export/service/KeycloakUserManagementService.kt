@@ -33,16 +33,20 @@ class KeycloakUserManagementService(
         @Context private val config: Config,
         @Context private val userDataWriter: UserDataWriter,
         @Context private val keycloakClient: KeycloakClient) {
-
+    private var lastReadUserCount = 0
     fun exportUserData() {
         logger.info("Initializing user-data export from keycloak...")
-        val currentUsers = keycloakClient.readUsers()
-        val usersToWrite = currentUsers.filterNot { it.isProcessed() }.toList()
-        logger.info("Found ${usersToWrite.size} unprocessed users from ${currentUsers.size} total number of users")
-        if (usersToWrite.isNotEmpty()) {
-            userDataWriter.writeUsers(usersToWrite)
-            usersToWrite.forEach { keycloakClient.alterUser(it.reset()) }
-            logger.info("Exported and overridden ${usersToWrite.size} users")
+        val currentNumberOfUsers = keycloakClient.totalNumberOfUsers()
+        while (currentNumberOfUsers > lastReadUserCount) {
+            val currentUsers = keycloakClient.readUsers(lastReadUserCount, lastReadUserCount + config.keycloakUserPageSize)
+            val usersToWrite = currentUsers.filterNot { it.isProcessed() }.toList()
+            logger.info("Found ${usersToWrite.size} unprocessed users from ${currentUsers.size} total number of users")
+            if (usersToWrite.isNotEmpty()) {
+                userDataWriter.writeUsers(usersToWrite)
+                usersToWrite.forEach { keycloakClient.alterUser(it.reset()) }
+                logger.info("Exported and overridden ${usersToWrite.size} users")
+            }
+            lastReadUserCount += currentUsers.size
         }
     }
 

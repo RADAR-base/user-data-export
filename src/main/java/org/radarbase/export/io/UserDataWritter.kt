@@ -31,8 +31,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import javax.ws.rs.core.Context
 
 
@@ -46,14 +44,22 @@ class UserDataWriter(@Context private val config: Config) {
             return
         }
 
+        usersToWrite.groupBy { it.createdDate() }.entries.map {
+            writeUsers(it.key, it.value)
+        }
+
+        logger.info("Written ${usersToWrite.size} user data")
+    }
+
+    private fun writeUsers(date: String, usersToWrite: List<User>) {
         try {
-            val dateDirectory = Paths.get("${directoryDateFormatter.format(Instant.now())}/${directoryTimeFormatter.format(Instant.now())}/${config.userDataExportFile}")
+            val dateDirectory = Paths.get("$date/${Instant.now()}-${config.userDataExportFile}")
             val fullPath = rootPath.resolve(dateDirectory).normalize()
-            logger.info("Writing user data to $fullPath")
+            logger.debug("Writing user data to $fullPath")
             val file = prepareFile(fullPath) ?: throw IOException("Could not create file")
             val csvWriter = CSVWriter(file.bufferedWriter())
             val headers = usersToWrite.flatMap { it.toMap().keys }.toSet()
-            logger.info("Current set of headers are : $headers")
+            logger.debug("Current set of headers are : $headers")
             val output = mutableListOf(headers.toTypedArray())
             // remap the values for final set of headers
             output.addAll(usersToWrite.map {
@@ -80,10 +86,6 @@ class UserDataWriter(@Context private val config: Config) {
     }
 
     companion object {
-        private val directoryDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                .withZone(ZoneId.of("UTC"))
-        private val directoryTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-                .withZone(ZoneId.of("UTC"))
         private val logger = LoggerFactory.getLogger(UserDataWriter::class.java)
 
     }

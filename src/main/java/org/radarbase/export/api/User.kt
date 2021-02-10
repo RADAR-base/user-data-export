@@ -21,6 +21,9 @@
 package org.radarbase.export.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 data class User(
     var id: String,
@@ -67,8 +70,12 @@ data class User(
         return (attributes?.getOrDefault(IS_PROCESSED, null)?.first()?.toBoolean() ?: false)
     }
 
+    fun createdDate() : String = formatter.format((Instant.ofEpochMilli(createdTimestamp)))
     companion object {
         const val IS_PROCESSED = "isProcessed"
         const val PROJECT_NAME = "projectName"
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                .withZone(ZoneId.of("UTC"))
+
     }
 }

@@ -3,15 +3,15 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     java
     application
-    kotlin("jvm") version "1.3.61"
-    id("org.jetbrains.kotlin.plugin.noarg") version "1.3.61"
-    id("org.jetbrains.kotlin.plugin.jpa") version "1.3.61"
-    id("org.jetbrains.kotlin.plugin.allopen") version "1.3.61"
+    kotlin("jvm") version "1.4.10"
+    id("org.jetbrains.kotlin.plugin.noarg") version "1.4.10"
+    id("org.jetbrains.kotlin.plugin.jpa") version "1.4.10"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.4.10"
 }
 
 application {
     mainClassName = "org.radarbase.export.MainKt"
-    version = "0.0.1"
+    version = "0.0.2"
 }
 
 project.extra.apply {
@@ -51,7 +51,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
 }
 
-// config JVM target to 1.8 for kotlin compilation tasks
+
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
 }

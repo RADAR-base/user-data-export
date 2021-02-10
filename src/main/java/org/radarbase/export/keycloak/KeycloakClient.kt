@@ -110,7 +110,7 @@ class KeycloakClient(@Context private val config: Config,
                 .addQueryParameter("first", first.toString())
                 .addQueryParameter("max", max.toString())
                 .build()
-        logger.debug("Requesting for users: URL $url")
+        logger.info("Requesting for users: URL $url")
         return userListReader.readValue(execute(Request.Builder().apply {
             url(url)
             header("Authorization", "Bearer ${ensureToken()}")

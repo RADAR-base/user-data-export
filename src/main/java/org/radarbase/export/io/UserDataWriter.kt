@@ -34,7 +34,6 @@ import java.time.Instant
 import kotlin.io.path.bufferedWriter
 
 class UserDataWriter(@Context private val config: Config) {
-
     private val rootPath = Paths.get(config.userDataExportPath!!)
 
     fun writeUsers(usersToWrite: List<User>) {
@@ -45,49 +44,51 @@ class UserDataWriter(@Context private val config: Config) {
 
         usersToWrite
             .groupBy { it.createdDate() }
-            .forEach { (date, user) -> writeUsers(date, user) }
+            .forEach { (date, users) -> writeUsers(date, users) }
 
-        logger.info("Written ${usersToWrite.size} user data")
+        logger.info("Written {} user data", usersToWrite.size)
     }
 
     private fun writeUsers(date: String, usersToWrite: List<User>) {
-        val headers = usersToWrite.asSequence()
-            .flatMap { it.toMap().keys }
-            .toSet()
+        val userMaps = usersToWrite.map { it.toMap() }
+        val headers = userMaps
+            .flatMapTo(mutableSetOf()) { it.keys }
+            .toTypedArray()
 
-        logger.debug("Current set of headers are : $headers")
+        logger.debug("Current set of headers are: {}", headers)
 
+        val dateDirectory = Paths.get("$date/${Instant.now()}-${config.userDataExportFile}")
+        val path = rootPath.resolve(dateDirectory).normalize()
+
+        logger.debug("Writing user data to {}", path)
         try {
-            val dateDirectory = Paths.get("$date/${Instant.now()}-${config.userDataExportFile}")
-            val path = rootPath.resolve(dateDirectory).normalize()
-            logger.debug("Writing user data to {}", path)
-
             if (Files.notExists(path)) {
                 Files.createDirectories(path.parent)
             }
 
-            val openOptions = arrayOf(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+            val openOptions = arrayOf(
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING,
+            )
             path.bufferedWriter(options = openOptions).use { fileWriter ->
                 CSVWriter(fileWriter).use { csvWriter ->
-                    csvWriter.writeNext(headers.toTypedArray())
-                    usersToWrite
+                    csvWriter.writeNext(headers)
+                    userMaps
                         .forEach { user ->
-                            val userMap = user.toMap()
                             csvWriter.writeNext(headers
-                                .map { header -> userMap.getOrDefault(header, "") }
+                                .map { header -> user.getOrDefault(header, "") }
                                 .toTypedArray())
                         }
                 }
             }
-            logger.info("Written {} user data to {}", usersToWrite.size, path)
+            logger.info("Written {} user data to {}", userMaps.size, path)
         } catch (e: IOException) {
-            logger.error("Failed to write user data", e)
+            logger.error("Failed to write user data to {}", path, e)
             throw ExportTemporarilyFailedException("User export failed", e)
         }
     }
 
     companion object {
         private val logger = LoggerFactory.getLogger(UserDataWriter::class.java)
-
     }
 }

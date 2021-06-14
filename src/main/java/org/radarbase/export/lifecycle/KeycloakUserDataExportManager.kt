@@ -32,14 +32,14 @@ import java.time.Duration
 import java.util.concurrent.Future
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import javax.ws.rs.core.Context
-import javax.ws.rs.ext.Provider
+import jakarta.ws.rs.core.Context
+import jakarta.ws.rs.ext.Provider
 
 @Provider
 class KeycloakUserDataExportManager(
         @BackgroundScheduler @Context private val executor: ScheduledExecutorService,
         @Context private val keycloakUserManagementService: KeycloakUserManagementService,
-        @Context private val config: Config
+        @Context private val config: Config,
 ) : ApplicationEventListener {
     private val staleProcessingAge: Duration = Duration.ofMinutes(config.exportIntervalInMin)
 

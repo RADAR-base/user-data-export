@@ -24,14 +24,14 @@ import org.radarbase.export.service.KeycloakUserManagementService
 import org.radarbase.jersey.auth.Auth
 import org.radarbase.jersey.auth.Authenticated
 import org.radarbase.jersey.auth.NeedsPermission
-import org.radarcns.auth.authorization.Permission
+import org.radarbase.auth.authorization.Permission
 import org.slf4j.LoggerFactory
-import javax.annotation.Resource
-import javax.inject.Singleton
-import javax.ws.rs.*
-import javax.ws.rs.core.Context
-import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Response
+import jakarta.annotation.Resource
+import jakarta.inject.Singleton
+import jakarta.ws.rs.*
+import jakarta.ws.rs.core.Context
+import jakarta.ws.rs.core.MediaType
+import jakarta.ws.rs.core.Response
 
 @Path("users")
 @Authenticated

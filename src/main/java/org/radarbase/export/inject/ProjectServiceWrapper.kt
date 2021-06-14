@@ -20,11 +20,10 @@
 
 package org.radarbase.export.inject
 
-import org.radarbase.jersey.auth.ProjectService
+import org.radarbase.jersey.service.ProjectService
 import org.slf4j.LoggerFactory
 
-class ProjectServiceWrapper(
-): ProjectService {
+class ProjectServiceWrapper: ProjectService {
     override fun ensureProject(projectId: String) {
         logger.info("Skipping project check")
     }

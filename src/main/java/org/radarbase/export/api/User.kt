@@ -36,46 +36,46 @@ data class User(
     var email: String?,
     var attributes: Map<String, List<String>>?) {
 
-    fun toMap(): Map<String, String> {
-        val userMap = mutableMapOf(
-                "id" to id,
-                "username" to username,
-                "email" to email.orEmpty(),
-                "firstName" to firstName.orEmpty(),
-                "lastName" to lastName.orEmpty(),
-                "createdTimestamp" to createdTimestamp.toString(),
-                "enabled" to enabled.toString(),
-                "emailVerified" to enabled.toString(),
-                "enabled" to enabled.toString()
-        )
-        attributes?.map { entry ->
-            // keycloak returns the value as a list although it only allows one value per key.
-            // Thus fetching the first item here.
-            userMap[entry.key] = entry.value.first()
-        }
-        return userMap
-    }
+    fun toMap(): Map<String, String> = mapOf(
+        "id" to id,
+        "username" to username,
+        "email" to email.orEmpty(),
+        "firstName" to firstName.orEmpty(),
+        "lastName" to lastName.orEmpty(),
+        "createdTimestamp" to createdTimestamp.toString(),
+        "enabled" to enabled.toString(),
+        "emailVerified" to enabled.toString(),
+        "enabled" to enabled.toString(),
+    ) + (attributes
+        ?.mapValues { (_, v) -> v.first() }
+        ?: emptyMap())
 
-    fun reset(): User = this.copy(
-            firstName = "",
-            lastName = "",
-            // skip projectName
-            attributes = attributes?.filter { it.key == PROJECT_NAME }.orEmpty().toMutableMap().also {
+    fun reset(): User = copy(
+        firstName = "",
+        lastName = "",
+        // skip projectName
+        attributes = attributes
+            ?.filter { it.key == PROJECT_NAME }
+            .orEmpty()
+            .toMutableMap().also {
                 it.putIfAbsent(IS_PROCESSED, listOf(true.toString()))
-            }
+            },
     )
 
     @JsonIgnore
-    fun isProcessed(): Boolean {
-        return (attributes?.getOrDefault(IS_PROCESSED, null)?.first()?.toBoolean() ?: false)
-    }
+    fun isProcessed(): Boolean = attributes
+        ?.getOrDefault(IS_PROCESSED, null)
+        ?.firstOrNull()
+        ?.toBoolean()
+        ?: false
 
     fun createdDate() : String = formatter.format((Instant.ofEpochMilli(createdTimestamp)))
+
     companion object {
-        const val IS_PROCESSED = "isProcessed"
-        const val PROJECT_NAME = "projectName"
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                .withZone(ZoneId.of("UTC"))
+        private const val IS_PROCESSED = "isProcessed"
+        private const val PROJECT_NAME = "projectName"
+        private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            .withZone(ZoneId.of("UTC"))
 
     }
 }

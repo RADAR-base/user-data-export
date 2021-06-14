@@ -35,10 +35,12 @@ import org.slf4j.LoggerFactory
 import java.net.MalformedURLException
 import java.time.Duration
 import java.time.Instant
-import javax.ws.rs.core.Context
+import jakarta.ws.rs.core.Context
 
-class KeycloakClient(@Context private val config: Config,
-                     @Context private val mapper: ObjectMapper) {
+class KeycloakClient(
+    @Context private val config: Config,
+    @Context private val mapper: ObjectMapper,
+) {
 
     private val keycloakBaseUrl: HttpUrl = config.keycloakUrl.toHttpUrlOrNull()
         ?: throw MalformedURLException("Cannot parse base URL ${config.keycloakUrl} as an URL")
@@ -47,7 +49,6 @@ class KeycloakClient(@Context private val config: Config,
     private val realmName: String? = config.realmName
     private val httpClient = OkHttpClient()
     private val userListReader = mapper.readerFor(object : TypeReference<List<User>>(){})
-    private val userReader = mapper.readerFor(User::class.java)
 
 
     private var token: String? = null
@@ -56,7 +57,9 @@ class KeycloakClient(@Context private val config: Config,
     private val validToken: String?
         get() {
             val localToken = token ?: return null
-            expiration?.takeIf { it > Instant.now() } ?: return null
+            expiration
+                ?.takeIf { it > Instant.now() }
+                ?: return null
             return localToken
         }
 
@@ -105,22 +108,13 @@ class KeycloakClient(@Context private val config: Config,
         }
     }
 
-    fun readUsers(first: Int = 0, max: Int = 100): List<User> {
+    fun readUsers(first: Int = 0, max: Int = 1000): List<User> {
         val url = keycloakBaseUrl.resolve("admin/realms/$realmName/users")!!.newBuilder()
                 .addQueryParameter("first", first.toString())
                 .addQueryParameter("max", max.toString())
                 .build()
         logger.info("Requesting for users: URL $url")
         return userListReader.readValue(execute(Request.Builder().apply {
-            url(url)
-            header("Authorization", "Bearer ${ensureToken()}")
-        }.build()))
-    }
-
-    fun readUser(id: String): User? {
-        val url = keycloakBaseUrl.resolve("admin/realms/$realmName/users/$id")!!
-        logger.debug("Requesting for user: URL $url")
-        return userReader.readValue(execute(Request.Builder().apply {
             url(url)
             header("Authorization", "Bearer ${ensureToken()}")
         }.build()))
@@ -134,6 +128,7 @@ class KeycloakClient(@Context private val config: Config,
             header("Authorization", "Bearer ${ensureToken()}")
         }.build()), Int::class.java)
     }
+
     fun alterUser(user: User) {
         val url = keycloakBaseUrl.resolve("admin/realms/$realmName/users/${user.id}")!!
         logger.debug("Requesting to override user ${user.id} : $user")

@@ -37,5 +37,5 @@ data class Config(
         var jwtResourceName: String = "user-data-manager",
         var jwtRSAPublicKeys: List<String>? = null,
         var enableCors: Boolean = false,
-        val keycloakUserPageSize : Int = 100
+        val keycloakUserPageSize : Int = 1000,
    )

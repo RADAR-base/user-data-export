@@ -3,33 +3,29 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     java
     application
-    kotlin("jvm") version "1.4.10"
-    id("org.jetbrains.kotlin.plugin.noarg") version "1.4.10"
-    id("org.jetbrains.kotlin.plugin.jpa") version "1.4.10"
-    id("org.jetbrains.kotlin.plugin.allopen") version "1.4.10"
+    kotlin("jvm") version "1.5.10"
+    id("org.jetbrains.kotlin.plugin.noarg") version "1.5.10"
+    id("org.jetbrains.kotlin.plugin.jpa") version "1.5.10"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.5.10"
 }
 
+version = "0.0.2"
+
 application {
-    mainClassName = "org.radarbase.export.MainKt"
-    version = "0.0.2"
+    mainClass.set("org.radarbase.export.MainKt")
 }
 
 project.extra.apply {
-    set("okhttpVersion", "4.2.0")
-    set("jacksonVersion", "2.9.10")
-    set("slf4jVersion", "1.7.27")
+    set("okhttpVersion", "4.9.1")
+    set("jacksonVersion", "2.12.3")
+    set("slf4jVersion", "1.7.30")
     set("logbackVersion", "1.2.3")
-    set("grizzlyVersion", "2.4.4")
-    set("jerseyVersion", "2.30")
     set("openCsvVersion", "4.6")
-    set("radarJerseyVersion", "0.2.2.3")
+    set("radarJerseyVersion", "0.6.2")
 }
 
 repositories {
-    jcenter()
-    maven(url = "https://dl.bintray.com/radar-base/org.radarbase")
-    maven(url = "https://dl.bintray.com/radar-cns/org.radarcns")
-    maven(url = "https://repo.thehyve.nl/content/repositories/snapshots")
+    mavenCentral()
 }
 
 dependencies {
@@ -38,10 +34,7 @@ dependencies {
     implementation("com.opencsv:opencsv:${project.extra["openCsvVersion"]}")
     implementation("org.radarbase:radar-jersey:${project.extra["radarJerseyVersion"]}")
 
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${project.extra["jacksonVersion"]}")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${project.extra["jacksonVersion"]}")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${project.extra["jacksonVersion"]}")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${project.extra["jacksonVersion"]}")
+    implementation("com.fasterxml.jackson.core:jackson-databind:${project.extra["jacksonVersion"]}")
     implementation("org.slf4j:slf4j-api:${project.extra["slf4jVersion"]}")
 
     implementation("com.squareup.okhttp3:okhttp:${project.extra["okhttpVersion"]}")
@@ -64,20 +57,19 @@ tasks.withType<Test> {
 }
 
 tasks.register("downloadDependencies") {
-    configurations["runtimeClasspath"].files
-    configurations["compileClasspath"].files
-
     doLast {
+        configurations["runtimeClasspath"].files
+        configurations["compileClasspath"].files
         println("Downloaded all dependencies")
     }
 }
 
 
 tasks.register<Copy>("copyDependencies") {
-    from(configurations.runtimeClasspath.get().files)
+    from(configurations.runtimeClasspath.map { it.files })
     into("${buildDir}/third-party")
 }
 
 tasks.wrapper {
-    gradleVersion = "6.2.2"
+    gradleVersion = "7.0.2"
 }

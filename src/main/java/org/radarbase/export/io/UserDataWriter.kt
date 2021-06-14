@@ -21,18 +21,17 @@
 package org.radarbase.export.io
 
 import com.opencsv.CSVWriter
+import jakarta.ws.rs.core.Context
 import org.radarbase.export.Config
 import org.radarbase.export.api.User
 import org.radarbase.export.exception.ExportTemporarilyFailedException
 import org.slf4j.LoggerFactory
-import java.io.File
 import java.io.IOException
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 import java.time.Instant
-import javax.ws.rs.core.Context
-
+import kotlin.io.path.bufferedWriter
 
 class UserDataWriter(@Context private val config: Config) {
 
@@ -44,44 +43,46 @@ class UserDataWriter(@Context private val config: Config) {
             return
         }
 
-        usersToWrite.groupBy { it.createdDate() }.entries.map {
-            writeUsers(it.key, it.value)
-        }
+        usersToWrite
+            .groupBy { it.createdDate() }
+            .forEach { (date, user) -> writeUsers(date, user) }
 
         logger.info("Written ${usersToWrite.size} user data")
     }
 
     private fun writeUsers(date: String, usersToWrite: List<User>) {
+        val headers = usersToWrite.asSequence()
+            .flatMap { it.toMap().keys }
+            .toSet()
+
+        logger.debug("Current set of headers are : $headers")
+
         try {
             val dateDirectory = Paths.get("$date/${Instant.now()}-${config.userDataExportFile}")
-            val fullPath = rootPath.resolve(dateDirectory).normalize()
-            logger.debug("Writing user data to $fullPath")
-            val file = prepareFile(fullPath) ?: throw IOException("Could not create file")
-            val csvWriter = CSVWriter(file.bufferedWriter())
-            val headers = usersToWrite.flatMap { it.toMap().keys }.toSet()
-            logger.debug("Current set of headers are : $headers")
-            val output = mutableListOf(headers.toTypedArray())
-            // remap the values for final set of headers
-            output.addAll(usersToWrite.map {
-                user -> headers.map { header -> user.toMap().getOrDefault(header, "") }.toTypedArray()
-            }.toList())
+            val path = rootPath.resolve(dateDirectory).normalize()
+            logger.debug("Writing user data to {}", path)
 
-            csvWriter.use {
-                it.writeAll(output)
+            if (Files.notExists(path)) {
+                Files.createDirectories(path.parent)
             }
-            logger.info("Written ${usersToWrite.size} user data to $fullPath")
+
+            val openOptions = arrayOf(StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+            path.bufferedWriter(options = openOptions).use { fileWriter ->
+                CSVWriter(fileWriter).use { csvWriter ->
+                    csvWriter.writeNext(headers.toTypedArray())
+                    usersToWrite
+                        .forEach { user ->
+                            val userMap = user.toMap()
+                            csvWriter.writeNext(headers
+                                .map { header -> userMap.getOrDefault(header, "") }
+                                .toTypedArray())
+                        }
+                }
+            }
+            logger.info("Written {} user data to {}", usersToWrite.size, path)
         } catch (e: IOException) {
             logger.error("Failed to write user data", e)
             throw ExportTemporarilyFailedException("User export failed", e)
-        }
-    }
-
-    private fun prepareFile(fullPath: Path): File? {
-        if (Files.notExists(fullPath)) {
-            File(fullPath.toUri()).parentFile.mkdirs()
-            return Files.createFile(fullPath).toFile()
-        } else {
-            return File(fullPath.toUri())
         }
     }
 

@@ -9,7 +9,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen") version "1.5.10"
 }
 
-version = "0.0.2"
+version = "0.0.3"
 
 application {
     mainClass.set("org.radarbase.export.MainKt")

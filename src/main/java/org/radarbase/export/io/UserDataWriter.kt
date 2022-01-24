@@ -37,7 +37,7 @@ class UserDataWriter(@Context private val config: Config) {
     private val rootPath = Paths.get(config.userDataExportPath!!)
 
     fun writeUsers(usersToWrite: List<User>) {
-        if(usersToWrite.isEmpty()) {
+        if (usersToWrite.isEmpty()) {
             logger.info("No users required to be written to CSV")
             return
         }

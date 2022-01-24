@@ -1,33 +1,28 @@
-FROM gradle:7.0-jdk11 as builder
+FROM gradle:7.3-jdk17 as builder
 
 RUN mkdir /code
 WORKDIR /code
 
 ENV GRADLE_USER_HOME=/code/.gradlecache
 
-COPY gradlew ./build.gradle.kts ./settings.gradle.kts /code/
+COPY build.gradle.kts settings.gradle.kts gradle.properties /code/
 
-RUN gradle downloadDependencies copyDependencies --no-watch-fs
+RUN gradle prepareDockerEnvironment --no-watch-fs
 
 COPY ./src /code/src
 
-RUN gradle distTar --no-watch-fs \
-    && cd build/distributions \
-    && tar xf *.tar \
-    && rm *.tar user-data-manager-*/lib/user-data-manager-*.jar
+RUN gradle jar --no-watch-fs
 
-FROM openjdk:11-jre-slim
+FROM azul/zulu-openjdk-alpine:17-jre-headless
 
 MAINTAINER @nivemaham
 
 LABEL description="Data exported from Keycloak created by HOMEApp"
 
-RUN apt-get update && apt-get install -y \
-  curl \
-  && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 
-COPY --from=builder /code/build/distributions/user-data-manager-*/bin/* /usr/bin/
-COPY --from=builder /code/build/distributions/user-data-manager-*/lib/* /usr/lib/
-COPY --from=builder /code/build/libs/user-data-manager-*.jar /usr/lib/
+COPY --from=builder /code/build/third-party/* /usr/lib/
+COPY --from=builder /code/build/scripts/* /usr/bin/
+COPY --from=builder /code/build/libs/* /usr/lib/
 
 CMD ["user-data-manager"]

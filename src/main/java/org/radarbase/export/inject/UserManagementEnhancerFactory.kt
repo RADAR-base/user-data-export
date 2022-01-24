@@ -26,31 +26,35 @@ import org.radarbase.export.io.UserDataWriter
 import org.radarbase.export.keycloak.KeycloakClient
 import org.radarbase.export.service.KeycloakUserManagementService
 import org.radarbase.jersey.auth.AuthConfig
-import org.radarbase.jersey.config.ConfigLoader
-import org.radarbase.jersey.config.EnhancerFactory
-import org.radarbase.jersey.config.JerseyResourceEnhancer
+import org.radarbase.jersey.enhancer.EnhancerFactory
+import org.radarbase.jersey.enhancer.Enhancers
+import org.radarbase.jersey.enhancer.JerseyResourceEnhancer
+import org.radarbase.jersey.filter.Filters
 import org.radarbase.jersey.service.ProjectService
 import jakarta.inject.Singleton
 
 class UserManagementEnhancerFactory(private val config: Config) : EnhancerFactory {
     override fun createEnhancers(): List<JerseyResourceEnhancer> = listOf(
         UserManagementEnhancer(config),
-        ConfigLoader.Enhancers.generalException,
-        ConfigLoader.Enhancers.ecdsa,
-        ConfigLoader.Enhancers.health,
-        ConfigLoader.Enhancers.radar(AuthConfig(jwtRSAPublicKeys = config.jwtRSAPublicKeys, jwtResourceName = config.jwtResourceName)),
-        ConfigLoader.Enhancers.httpException)
+        Enhancers.exception,
+        Enhancers.ecdsa,
+        Enhancers.health,
+        Enhancers.radar(AuthConfig(
+            jwtRSAPublicKeys = config.jwtRSAPublicKeys,
+            jwtResourceName = config.jwtResourceName,
+        )),
+    )
 
     class UserManagementEnhancer(private val config: Config): JerseyResourceEnhancer {
         override val classes: Array<Class<*>>  get() {
             return if (config.enableCors) {
                 arrayOf(
-                    ConfigLoader.Filters.logResponse,
-                    ConfigLoader.Filters.cors,
+                    Filters.logResponse,
+                    Filters.cors,
                 )
             } else {
                 arrayOf(
-                    ConfigLoader.Filters.logResponse,
+                    Filters.logResponse,
                 )
             }
         }
@@ -60,27 +64,25 @@ class UserManagementEnhancerFactory(private val config: Config) : EnhancerFactor
             "org.radarbase.export.lifecycle",
         )
 
-        override fun enhanceBinder(binder: AbstractBinder) {
-            binder.apply {
-                bind(config)
-                    .to(Config::class.java)
+        override fun AbstractBinder.enhance() {
+            bind(config)
+                .to(Config::class.java)
 
-                bind(KeycloakClient::class.java)
-                    .to(KeycloakClient::class.java)
-                    .`in`(Singleton::class.java)
+            bind(KeycloakClient::class.java)
+                .to(KeycloakClient::class.java)
+                .`in`(Singleton::class.java)
 
-                bind(UserDataWriter::class.java)
-                    .to(UserDataWriter::class.java)
-                    .`in`(Singleton::class.java)
+            bind(UserDataWriter::class.java)
+                .to(UserDataWriter::class.java)
+                .`in`(Singleton::class.java)
 
-                bind(KeycloakUserManagementService::class.java)
-                    .to(KeycloakUserManagementService::class.java)
-                    .`in`(Singleton::class.java)
+            bind(KeycloakUserManagementService::class.java)
+                .to(KeycloakUserManagementService::class.java)
+                .`in`(Singleton::class.java)
 
-                bind(ProjectServiceWrapper::class.java)
-                    .to(ProjectService::class.java)
-                    .`in`(Singleton::class.java)
-            }
+            bind(ProjectServiceWrapper::class.java)
+                .to(ProjectService::class.java)
+                .`in`(Singleton::class.java)
         }
     }
 }

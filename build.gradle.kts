@@ -1,27 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    java
     application
-    kotlin("jvm") version "1.5.10"
-    id("org.jetbrains.kotlin.plugin.noarg") version "1.5.10"
-    id("org.jetbrains.kotlin.plugin.jpa") version "1.5.10"
-    id("org.jetbrains.kotlin.plugin.allopen") version "1.5.10"
+    kotlin("jvm")
 }
 
 version = "0.0.3"
 
 application {
     mainClass.set("org.radarbase.export.MainKt")
-}
-
-project.extra.apply {
-    set("okhttpVersion", "4.9.1")
-    set("jacksonVersion", "2.12.3")
-    set("slf4jVersion", "1.7.30")
-    set("logbackVersion", "1.2.3")
-    set("openCsvVersion", "4.6")
-    set("radarJerseyVersion", "0.6.2")
 }
 
 repositories {
@@ -31,22 +18,31 @@ repositories {
 dependencies {
     api(kotlin("stdlib-jdk8"))
 
-    implementation("com.opencsv:opencsv:${project.extra["openCsvVersion"]}")
-    implementation("org.radarbase:radar-jersey:${project.extra["radarJerseyVersion"]}")
+    val openCsvVersion: String by project
+    implementation("com.opencsv:opencsv:$openCsvVersion")
 
-    implementation("com.fasterxml.jackson.core:jackson-databind:${project.extra["jacksonVersion"]}")
-    implementation("org.slf4j:slf4j-api:${project.extra["slf4jVersion"]}")
+    val radarJerseyVersion: String by project
+    implementation("org.radarbase:radar-jersey:$radarJerseyVersion")
 
-    implementation("com.squareup.okhttp3:okhttp:${project.extra["okhttpVersion"]}")
+    val jacksonVersion: String by project
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
 
-    runtimeOnly("ch.qos.logback:logback-classic:${project.extra["logbackVersion"]}")
+    val slf4jVersion: String by project
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
+    val okhttpVersion: String by project
+    implementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
+
+    val logbackVersion: String by project
+    runtimeOnly("ch.qos.logback:logback-classic:$logbackVersion")
+
+    val junitVersion: String by project
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
 }
 
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "17"
 }
 
 tasks.withType<Test> {
@@ -56,20 +52,24 @@ tasks.withType<Test> {
     }
 }
 
-tasks.register("downloadDependencies") {
+val downloadDependencies by tasks.registering {
     doLast {
-        configurations["runtimeClasspath"].files
-        configurations["compileClasspath"].files
+        configurations.runtimeClasspath.map { it.files }
+        configurations.compileClasspath.map { it.files }
         println("Downloaded all dependencies")
     }
 }
 
-
-tasks.register<Copy>("copyDependencies") {
+val copyDependencies by tasks.registering(Copy::class) {
     from(configurations.runtimeClasspath.map { it.files })
-    into("${buildDir}/third-party")
+    into("$buildDir/third-party")
+}
+
+tasks.register("prepareDockerEnvironment") {
+    val startScripts by tasks.getting
+    dependsOn(downloadDependencies, copyDependencies, startScripts)
 }
 
 tasks.wrapper {
-    gradleVersion = "7.0.2"
+    gradleVersion = "7.3.3"
 }

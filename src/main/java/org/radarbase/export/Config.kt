@@ -21,7 +21,7 @@
 package org.radarbase.export
 
 import org.radarbase.export.inject.UserManagementEnhancerFactory
-import org.radarbase.jersey.config.EnhancerFactory
+import org.radarbase.jersey.enhancer.EnhancerFactory
 import java.net.URI
 
 data class Config(

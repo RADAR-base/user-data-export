@@ -13,7 +13,7 @@ COPY ./src /code/src
 
 RUN gradle jar --no-watch-fs
 
-FROM azul/zulu-openjdk-alpine:17-jre-headless
+FROM azul/zulu-openjdk-alpine:17.0.6-17.40.19-jre-x86
 
 MAINTAINER @nivemaham
 
